@@ -1,6 +1,6 @@
 {
-  "name": "cabal-bot",
-  "version": "0.0.1",
+  "name": "cabal-bot-constructor",
+  "version": "1.0.0",
   "description": "cabal-bot",
   "main": "index.js",
   "scripts": {
