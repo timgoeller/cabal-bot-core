@@ -1,4 +1,4 @@
-cabal-bot
+cabal-bot-constructor
 
 ```javascript
 cb = new CabalBot('example-bot', {channels: ["default","weather"]})

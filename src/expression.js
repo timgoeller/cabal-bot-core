@@ -1,82 +1,78 @@
 class CabalBotExpression {
-  constructor(firstExpr) {
+  constructor (firstExpr) {
     this.firstExpr = firstExpr
 
-    if(!this.firstExpr) {
+    if (!this.firstExpr) {
       this.firstExpr = this
     }
   }
 
-  onCommand(commandName) {
-    if(!commandName) {
-      throw "name of command must be set"
+  onCommand (commandName) {
+    if (!commandName) {
+      throw new Error('name of command must be set')
     }
     this.resolve = this._resolveOnCommand(commandName)
 
     this.nextExpr = new CabalBotExpression(this.firstExpr)
-    return this.nextExpr 
+    return this.nextExpr
   }
 
-  _resolveOnCommand(commandName) {
+  _resolveOnCommand (commandName) {
     return (envelope, messageText, cabal) => {
       let beforeWhitespace = messageText.match(/^([^\s]+)/g)
-      if(beforeWhitespace) {
+      if (beforeWhitespace) {
         beforeWhitespace = beforeWhitespace[0]
-      }
-      else return {match: false}
+      } else return { match: false }
 
-      if(beforeWhitespace === commandName) {
+      if (beforeWhitespace === commandName) {
         let afterWhitespace = messageText.match(/\s[\s\S]*/g)
-        if(afterWhitespace) {
+        if (afterWhitespace) {
           afterWhitespace = afterWhitespace[0].substring(1)
-        }
-        else afterWhitespace = ""
-        return {match: true, 
-          messageText: afterWhitespace}
-      }
-      else {
-        return {match: false}
+        } else afterWhitespace = ''
+
+        return { match: true, messageText: afterWhitespace }
+      } else {
+        return { match: false }
       }
     }
   }
 
-  inChannel(channelName) {
-    if(!channelName) {
-      throw "name of channel must be set"
+  inChannel (channelName) {
+    if (!channelName) {
+      throw new Error('name of channel must be set')
     }
     this.resolve = this._resolveInChannel(channelName)
 
     this.nextExpr = new CabalBotExpression(this.firstExpr)
-    return this.nextExpr 
+    return this.nextExpr
   }
 
-  _resolveInChannel(channelName) {
+  _resolveInChannel (channelName) {
     return (envelope, messageText, cabal) => {
-      if(envelope.channel === channelName) {
-        return {match: true, messageText: messageText}
-      }
-      else {
-        return {match: false}
+      if (envelope.channel === channelName) {
+        return { match: true, messageText: messageText }
+      } else {
+        return { match: false }
       }
     }
   }
 
-  thenDo(cb) {
+  thenDo (cb) {
     this.cb = cb
   }
 
-  _runExpression(cabal, envelope) {
+  _runExpression (cabal, envelope) {
     let messageText = envelope.message.value.content.text.substring(1)
     let currentExpression = this.firstExpr
-    while(true) {
-      if(!currentExpression.resolve) break
-      let resolveResult = currentExpression.resolve(envelope, messageText, cabal)
-      if(!resolveResult.match) return
+    while (true) {
+      if (!currentExpression.resolve) break
+      const resolveResult = currentExpression.resolve(envelope, messageText, cabal)
+      if (!resolveResult.match) return
       messageText = resolveResult.messageText
       currentExpression = currentExpression.nextExpr
     }
 
-    if(currentExpression.cb) {
+    if (currentExpression.cb) {
       currentExpression.cb(messageText, cabal, envelope)
     }
   }
