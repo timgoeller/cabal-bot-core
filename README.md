@@ -15,7 +15,7 @@ cb.expr().onCommand('log').onCommand('pong').thenDo(
   {console.log('pong!')}
 )
 
-//react to !weather in a channel named weather
+//react to !weatherreport in a channel named weather
 cb.expr().onCommand('weatherreport').inChannel('weather').thenDo(
   (messageText, cabal, envelope) => 
   {cabal.publishMessage({
