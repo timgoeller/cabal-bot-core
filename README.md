@@ -15,6 +15,18 @@ cb.expr().onCommand('log').onCommand('pong').thenDo(
   {console.log('pong!')}
 )
 
+//return whatever the user enters after !return
+cb.expr().onCommand('return').thenDo(
+  (messageText, cabal, envelope) => 
+  {cabal.publishMessage({
+    type: 'chat/text',
+    content: {
+      text: messageText,
+      channel: envelope.channel
+    }})
+  }
+)
+
 //react to !weatherreport in a channel named weather
 cb.expr().onCommand('weatherreport').inChannel('weather').thenDo(
   (messageText, cabal, envelope) => 
