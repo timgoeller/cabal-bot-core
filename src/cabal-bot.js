@@ -14,7 +14,6 @@ class CabalBot {
     }
     this.channels = opts.channels
     this.client = new Client(opts.clientOpts)
-    this.messageListeners = []
     this.expressions = []
   }
 
@@ -46,7 +45,7 @@ class CabalBot {
     }
   }
 
-  expr() {
+  pipeline() {
     let expr = new CabalBotExpression()
     this.expressions.push(expr)
     return expr

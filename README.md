@@ -4,19 +4,19 @@ cabal-bot
 cb = new CabalBot('example-bot', {channels: ["default","weather"]})
 
 //react to !log ping
-cb.expr().onCommand('log').onCommand('ping').thenDo(
+cb.pipeline().onCommand('log').onCommand('ping').thenDo(
   (messageText, cabal, envelope) => 
   {console.log("ping!")}
 )
 
 //react to !log pong
-cb.expr().onCommand('log').onCommand('pong').thenDo(
+cb.pipeline().onCommand('log').onCommand('pong').thenDo(
   (messageText, cabal, envelope) => 
   {console.log('pong!')}
 )
 
 //return whatever the user enters after !return
-cb.expr().onCommand('return').thenDo(
+cb.pipeline().onCommand('return').thenDo(
   (messageText, cabal, envelope) => 
   {cabal.publishMessage({
     type: 'chat/text',
@@ -28,7 +28,7 @@ cb.expr().onCommand('return').thenDo(
 )
 
 //react to !weatherreport in a channel named weather
-cb.expr().onCommand('weatherreport').inChannel('weather').thenDo(
+cb.pipeline().onCommand('weatherreport').inChannel('weather').thenDo(
   (messageText, cabal, envelope) => 
   {cabal.publishMessage({
     type: 'chat/text',
