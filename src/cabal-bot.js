@@ -14,7 +14,12 @@ class CabalBot {
     }
     this.channels = opts.channels
     this.client = new Client(opts.clientOpts)
-    this.expressions = []
+    this._expressions = []
+    this.public = opts.public === undefined ? false : opts.public
+
+    if (this.public) {
+      this._initPublicAdding()
+    }
   }
 
   joinCabal (key) {
@@ -38,16 +43,35 @@ class CabalBot {
     }
     if (envelope.message.value.content.text !== '') {
       if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-        this.expressions.forEach(expr => {
+        this._expressions.forEach(expr => {
           expr._runExpression(cabalDetails, envelope)
         })
       }
     }
   }
 
+  _initPublicAdding () {
+    this._addingBot = new CabalBot('add-' + this.name)
+    this._addingBot.client.createCabal().then(cabalDetails => {
+      cabalDetails.on('init', () => {
+        this._addingBot.joinCabal(cabalDetails._cabal.key)
+        this._addingBot.pipeline().onCommand('addto').inCabal(cabalDetails._cabal.key).do(
+          (messageText, cabal, envelope) => {
+            if (messageText.length === 64) {
+              try {
+                this.joinCabal(messageText)
+              } catch (error) {}
+            }
+          }
+        )
+        console.log('My Cabal: ' + cabalDetails._cabal.key)
+      })
+    })
+  }
+
   pipeline () {
     const expr = new CabalBotExpression()
-    this.expressions.push(expr)
+    this._expressions.push(expr)
     return expr
   }
 }
