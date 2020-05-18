@@ -57,7 +57,7 @@ class CabalBotExpression {
     }
   }
 
-  thenDo (cb) {
+  do (cb) {
     this.cb = cb
   }
 
