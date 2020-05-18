@@ -1,6 +1,10 @@
 cabal-bot-constructor
 
+`npm install cabal-bot-constructor`
+
 ```javascript
+var CabalBot = require('cabal-bot-constructor')
+
 const cb = new CabalBot('example-bot', { channels: ['default','weather'] })
 
 // react to !log ping
