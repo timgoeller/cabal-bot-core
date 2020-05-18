@@ -1,8 +1,9 @@
 var Client = require('cabal-client')
-var CabalBotExpression = require('./expression')
+var events = require('events')
 
-class CabalBot {
+class CabalBot extends events.EventEmitter {
   constructor (name, opts) {
+    super()
     if (!name) {
       throw new Error('name must be set')
     }
@@ -14,12 +15,7 @@ class CabalBot {
     }
     this.channels = opts.channels
     this.client = new Client(opts.clientOpts)
-    this._expressions = []
     this.public = opts.public === undefined ? false : opts.public
-
-    if (this.public) {
-      this._initPublicAdding()
-    }
   }
 
   joinCabal (key) {
@@ -29,50 +25,30 @@ class CabalBot {
       cabalDetails.on('init', () => {
         cabalDetails.publishNick('[BOT] ' + this.name, () => {})
         cabalDetails.on('new-message', (envelope) => {
-          if (envelope.message.value.timestamp > initTime) {
-            this._onNewMessage(envelope, cabalDetails)
+          if (this.channels) {
+            if (!this.channels.includes(envelope.channel)) return
           }
-        })
-      })
-    })
-  }
 
-  _onNewMessage (envelope, cabalDetails) {
-    if (this.channels) {
-      if (!this.channels.includes(envelope.channel)) return
-    }
-    if (envelope.message.value.content.text !== '') {
-      if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-        this._expressions.forEach(expr => {
-          expr._runExpression(cabalDetails, envelope)
-        })
-      }
-    }
-  }
+          if (envelope.message.value.timestamp > initTime) {
+            this.emit('new-message', envelope, cabalDetails)
 
-  _initPublicAdding () {
-    this._addingBot = new CabalBot('add-' + this.name)
-    this._addingBot.client.createCabal().then(cabalDetails => {
-      cabalDetails.on('init', () => {
-        this._addingBot.joinCabal(cabalDetails._cabal.key)
-        this._addingBot.pipeline().onCommand('addto').inCabal(cabalDetails._cabal.key).do(
-          (messageText, cabal, envelope) => {
-            if (messageText.length === 64) {
-              try {
-                this.joinCabal(messageText)
-              } catch (error) {}
+            if (envelope.message.value.content.text !== '') {
+              if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+                this.emit('new-command', envelope, cabalDetails)
+              }
+            }
+          } else {
+            this.emit('old-message', envelope, cabalDetails)
+
+            if (envelope.message.value.content.text !== '') {
+              if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+                this.emit('old-command', envelope, cabalDetails)
+              }
             }
           }
-        )
-        console.log('My Cabal: ' + cabalDetails._cabal.key)
+        })
       })
     })
-  }
-
-  pipeline () {
-    const expr = new CabalBotExpression()
-    this._expressions.push(expr)
-    return expr
   }
 }
 
