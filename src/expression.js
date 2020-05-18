@@ -11,10 +11,7 @@ class CabalBotExpression {
     if (!commandName) {
       throw new Error('name of command must be set')
     }
-    this.resolve = this._resolveOnCommand(commandName)
-
-    this.nextExpr = new CabalBotExpression(this.firstExpr)
-    return this.nextExpr
+    return this._constructResolver(this._resolveOnCommand(commandName))
   }
 
   _resolveOnCommand (commandName) {
@@ -41,10 +38,7 @@ class CabalBotExpression {
     if (!channelName) {
       throw new Error('name of channel must be set')
     }
-    this.resolve = this._resolveInChannel(channelName)
-
-    this.nextExpr = new CabalBotExpression(this.firstExpr)
-    return this.nextExpr
+    return this._constructResolver(this._resolveInChannel(channelName))
   }
 
   _resolveInChannel (channelName) {
@@ -57,14 +51,41 @@ class CabalBotExpression {
     }
   }
 
+  inCabal (cabalKey) {
+    if (!cabalKey || cabalKey.length !== 64) {
+      throw new Error('key of cabal must be set and 64 characters long')
+    }
+
+    return this._constructResolver(this._resolveInCabal(cabalKey))
+  }
+
+  _resolveInCabal (cabalKey) {
+    return (envelope, messageText, cabal) => {
+      if (cabal._cabal.key === cabalKey) {
+        return { match: true, messageText: messageText }
+      } else {
+        return { match: false }
+      }
+    }
+  }
+
   do (cb) {
     this.cb = cb
+  }
+
+  _constructResolver (resolveMethod) {
+    /* resolveMethod is a curried method with bounded check variables, so it can be called later */
+    this.resolve = resolveMethod
+
+    this.nextExpr = new CabalBotExpression(this.firstExpr)
+    return this.nextExpr
   }
 
   _runExpression (cabal, envelope) {
     let messageText = envelope.message.value.content.text.substring(1)
     let currentExpression = this.firstExpr
     while (true) {
+      /* when there is no resolve, this is the end of the pipeline (containing the cb) */
       if (!currentExpression.resolve) break
       const resolveResult = currentExpression.resolve(envelope, messageText, cabal)
       if (!resolveResult.match) return
