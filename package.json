@@ -1,14 +1,17 @@
 {
-  "name": "cabal-bot-constructor",
+  "name": "cabal-bot-core",
   "version": "1.0.1",
   "description": "cabal-bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "timgoeller",
   "license": "AGPL-3.0",
-  "dependencies": {
-    "cabal-client": "^4.1.0"
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^7.1.2",
+    "cabal-client": "^4.1.0",
+    "chai": "^4.2.0"
   }
 }

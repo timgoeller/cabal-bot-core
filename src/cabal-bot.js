@@ -15,10 +15,13 @@ class CabalBot extends events.EventEmitter {
     }
     this.channels = opts.channels
     this.client = new Client(opts.clientOpts)
-    this.public = opts.public === undefined ? false : opts.public
   }
 
   joinCabal (key) {
+    if (!key) {
+      throw new Error('key must be set')
+    }
+
     const initTime = new Date().getTime()
 
     this.client.addCabal(key).then(cabalDetails => {
@@ -47,6 +50,7 @@ class CabalBot extends events.EventEmitter {
             }
           }
         })
+        this.emit('joined-cabal', cabalDetails)
       })
     })
   }
