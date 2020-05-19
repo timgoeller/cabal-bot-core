@@ -1,5 +1,5 @@
 # Cabal Bot Core
-Basic functionality for Cabal Bots. For more advanced command parsing see `cabal-bot-pipeline`.
+Basic functionality for cabal bots (https://cabal.chat/). For more advanced command parsing see `cabal-bot-pipeline`.
 
 ## Getting Started 
 ### Installing
