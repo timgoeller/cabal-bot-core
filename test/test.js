@@ -1,18 +1,25 @@
-/* global describe, it, context, beforeEach */
+/* global describe, it, context, beforeEach, before */
 var expect = require('chai').expect
 
 var CabalClient = require('cabal-client')
 var CabalBot = require('../src/cabal-bot')
 
 describe('CabalBot', function () {
+  before(function () {
+    var self = this
+
+    self.firstKey = '0b54896461391fbb0649750defbbf1dd34bebf23fd2fb4ad344d051dd93228e4'
+    self.secondKey = '92ae3209c636c8024da323d94ffdc891d7763cfa1ae1e88a08bbeb7a0f886781'
+  })
+
   describe('#constructor()', function () {
-    context('without arguments', function() {
+    context('without arguments', function () {
       it('should reject missing name', function () {
         expect(() => new CabalBot()).to.throw()
       })
     })
 
-    context('with a name', function() {
+    context('with a name', function () {
       it('should set name', function () {
         const cabalBot = new CabalBot('test')
         expect(cabalBot.name).to.equal('test')
@@ -24,7 +31,7 @@ describe('CabalBot', function () {
       })
     })
 
-    context('with a name and opts', function() {
+    context('with a name and opts', function () {
       it('should reject symbol with a length > 1', function () {
         expect(() => new CabalBot('test', { symbol: '!!' })).to.throw()
       })
@@ -37,27 +44,17 @@ describe('CabalBot', function () {
     })
   })
 
-  describe('#join()', function () {
+  describe('#joinCabal()', function () {
     beforeEach(function () {
       const self = this
 
       self.bot = new CabalBot('test', { clientOpts: { config: { temp: true } } })
-      const botPromise = new Promise((resolve) => {
-        self.bot.client.createCabal().then((cabalDetails) => {
-          cabalDetails.on('init', () => {
-            self.key = cabalDetails._cabal.key
-            resolve()
-          })
-        })
-      })
 
       return new Promise((resolve) => {
-        botPromise.then(function () {
-          self.secondClient = new CabalClient({ config: { temp: true } })
-          self.secondClient.addCabal(self.key).then((cabal) => {
-            self.secondClientCabal = cabal
-            resolve()
-          })
+        self.secondClient = new CabalClient({ config: { temp: true } })
+        self.secondClient.addCabal(self.firstKey).then((cabal) => {
+          self.secondClientCabal = cabal
+          resolve()
         })
       })
     })
@@ -75,13 +72,12 @@ describe('CabalBot', function () {
             expect(cabal).to.exist
             resolve()
           })
-          this.bot.joinCabal(this.key)
+          this.bot.joinCabal(this.firstKey)
         })
       })
       it('should call event when new message was published', function () {
         var self = this
 
-        self.timeout(10000)
         return new Promise((resolve) => {
           self.bot.on('joined-cabal', (cabal) => {
             self.bot.on('new-message', (envelope, cabalDetails) => {
@@ -96,7 +92,7 @@ describe('CabalBot', function () {
               }
             })
           })
-          self.bot.joinCabal(self.key)
+          self.bot.joinCabal(self.firstKey)
         })
       })
       it('should call event when new message with symbol prefix was published', function () {
@@ -116,9 +112,24 @@ describe('CabalBot', function () {
               }
             })
           })
-          self.bot.joinCabal(self.key)
+          self.bot.joinCabal(self.firstKey)
         })
       })
+    })
+  })
+
+  describe('#joinCabals()', function () {
+    it('should join all given cabals', function (done) {
+      const bot = new CabalBot('test', { clientOpts: { config: { temp: true } } })
+
+      let joined = 0
+      bot.on('joined-cabal', (cabal) => {
+        joined += 1
+        if (joined === 2) {
+          done()
+        }
+      })
+      bot.joinCabals([this.firstKey, this.secondKey])
     })
   })
 })

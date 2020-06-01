@@ -26,5 +26,5 @@ cb.on('new-message', (envelope, cabalDetails) => {
   })
 })
 
-cb.joinCabal("{key})
+cb.joinCabal('{key}')
 ```

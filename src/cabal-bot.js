@@ -54,6 +54,12 @@ class CabalBot extends events.EventEmitter {
       })
     })
   }
+
+  joinCabals (keys) {
+    keys.forEach(key => {
+      this.joinCabal(key)
+    })
+  }
 }
 
 module.exports = CabalBot
