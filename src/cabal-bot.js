@@ -60,6 +60,20 @@ class CabalBot extends events.EventEmitter {
       this.joinCabal(key)
     })
   }
+
+  broadcast (channels, text) {
+    this.client.cabals.forEach((cabal) =>
+      channels.forEach((channel) => {
+        cabal.publishMessage({
+          type: 'chat/text',
+          content: {
+            text: text,
+            channel: channel
+          }
+        })
+      })
+    )
+  }
 }
 
 module.exports = CabalBot
