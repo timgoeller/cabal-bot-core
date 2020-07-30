@@ -9,7 +9,7 @@
   "author": "timgoeller",
   "license": "AGPL-3.0",
   "dependencies": {
-    "cabal-client": "^4.1.0"
+    "cabal-client": "^6.1.3"
   },
   "devDependencies": {
     "mocha": "^7.1.2",

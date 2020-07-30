@@ -7,7 +7,8 @@ class CabalBot extends events.EventEmitter {
     if (!name) {
       throw new Error('name must be set')
     }
-    opts = opts || {}
+    opts = opts || { }
+    if (!opts.clientOpts) opts.clientOpts = { config: { temp: false }}
     this.name = name
     this.symbol = opts.symbol === undefined ? '!' : opts.symbol
     if (this.symbol.length !== 1) {
@@ -18,41 +19,41 @@ class CabalBot extends events.EventEmitter {
   }
 
   joinCabal (key) {
+    console.log(`joining ${key}`)
     if (!key) {
       throw new Error('key must be set')
     }
 
     const initTime = new Date().getTime()
 
-    this.client.addCabal(key).then(cabalDetails => {
-      cabalDetails.on('init', () => {
-        cabalDetails.publishNick('[BOT] ' + this.name, () => {})
-        cabalDetails.on('new-message', (envelope) => {
+    this.client.addCabal(key).then(cabal => {
+        console.log("initialized")
+        cabal.publishNick('~[BOT] ' + this.name, () => {})
+        cabal.on('new-message', (envelope) => {
           if (this.channels) {
             if (!this.channels.includes(envelope.channel)) return
           }
 
           if (envelope.message.value.timestamp > initTime) {
-            this.emit('new-message', envelope, cabalDetails)
+            this.emit('new-message', envelope, cabal)
 
             if (envelope.message.value.content.text !== '') {
               if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-                this.emit('new-command', envelope, cabalDetails)
+                this.emit('new-command', envelope, cabal)
               }
             }
           } else {
-            this.emit('old-message', envelope, cabalDetails)
+            this.emit('old-message', envelope, cabal)
 
             if (envelope.message.value.content.text !== '') {
               if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-                this.emit('old-command', envelope, cabalDetails)
+                this.emit('old-command', envelope, cabal)
               }
             }
           }
         })
-        this.emit('joined-cabal', cabalDetails)
+        this.emit('joined-cabal', cabal)
       })
-    })
   }
 
   joinCabals (keys) {
