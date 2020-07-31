@@ -28,8 +28,10 @@ class CabalBot extends events.EventEmitter {
 
     this.client.addCabal(key).then(cabal => {
         console.log("initialized")
-        cabal.publishNick('~[BOT] ' + this.name, () => {})
+        cabal.publishNick('~' + this.name + "[bot]", () => {})
+        this.channels.forEach(ch => cabal.joinChannel(ch))
         cabal.on('new-message', (envelope) => {
+          if (envelope.author.key === cabal.user.key) return // don't process messages sent from this bot
           if (this.channels) {
             if (!this.channels.includes(envelope.channel)) return
           }
@@ -59,6 +61,16 @@ class CabalBot extends events.EventEmitter {
   joinCabals (keys) {
     keys.forEach(key => {
       this.joinCabal(key)
+    })
+  }
+
+  post (cabal, channel, text) {
+    cabal.publishMessage({
+      type: 'chat/text',
+      content: {
+        text,
+        channel
+      }
     })
   }
 
