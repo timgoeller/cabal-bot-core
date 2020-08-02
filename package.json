@@ -1,6 +1,6 @@
 {
   "name": "cabal-bot-core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Create bots for cabal!",
   "main": "index.js",
   "scripts": {
