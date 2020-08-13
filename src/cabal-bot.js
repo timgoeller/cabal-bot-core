@@ -45,24 +45,28 @@ class CabalBot extends events.EventEmitter {
       if (!this.channels.includes(envelope.channel)) return
     }
 
+    const messageInfo = {}
+
+    messageInfo.mention = envelope.message.value.content.text.includes(this.name)
+
     if (envelope.message.value.timestamp > initTime) {
-      this.emit('new-message', envelope, cabal)
+      this.emit('new-message', envelope, cabal, messageInfo)
 
       if (envelope.message.value.content.text !== '') {
         if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-          this.emit('new-command', envelope, cabal)
+          this.emit('new-command', envelope, cabal, messageInfo)
         } else {
-          this.emit('new-non-command', envelope, cabal)
+          this.emit('new-non-command', envelope, cabal, messageInfo)
         }
       }
     } else {
-      this.emit('old-message', envelope, cabal)
+      this.emit('old-message', envelope, cabal, messageInfo)
 
       if (envelope.message.value.content.text !== '') {
         if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-          this.emit('old-command', envelope, cabal)
+          this.emit('old-command', envelope, cabal, messageInfo)
         } else {
-          this.emit('old-non-command', envelope, cabal)
+          this.emit('old-non-command', envelope, cabal, messageInfo)
         }
       }
     }
