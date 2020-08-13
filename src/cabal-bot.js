@@ -27,35 +27,39 @@ class CabalBot extends events.EventEmitter {
     const initTime = new Date().getTime()
 
     this.client.addCabal(key).then(cabal => {
-        console.log("initialized")
-        cabal.publishNick('~' + this.name + "[bot]", () => {})
-        this.channels.forEach(ch => cabal.joinChannel(ch))
-        cabal.on('new-message', (envelope) => {
-          if (envelope.author.key === cabal.user.key) return // don't process messages sent from this bot
-          if (this.channels) {
-            if (!this.channels.includes(envelope.channel)) return
-          }
+      console.log('initialized')
+      cabal.publishNick('~' + this.name + '[bot]', () => {})
+      this.channels.forEach(ch => cabal.joinChannel(ch))
+      cabal.on('new-message', (envelope) => {
+        if (envelope.author.key === cabal.user.key) return // don't process messages sent from this bot
+        if (this.channels) {
+          if (!this.channels.includes(envelope.channel)) return
+        }
 
-          if (envelope.message.value.timestamp > initTime) {
-            this.emit('new-message', envelope, cabal)
+        if (envelope.message.value.timestamp > initTime) {
+          this.emit('new-message', envelope, cabal)
 
-            if (envelope.message.value.content.text !== '') {
-              if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-                this.emit('new-command', envelope, cabal)
-              }
-            }
-          } else {
-            this.emit('old-message', envelope, cabal)
-
-            if (envelope.message.value.content.text !== '') {
-              if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-                this.emit('old-command', envelope, cabal)
-              }
+          if (envelope.message.value.content.text !== '') {
+            if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+              this.emit('new-command', envelope, cabal)
+            } else {
+              this.emit('new-non-command', envelope, cabal)
             }
           }
-        })
-        this.emit('joined-cabal', cabal)
+        } else {
+          this.emit('old-message', envelope, cabal)
+
+          if (envelope.message.value.content.text !== '') {
+            if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+              this.emit('old-command', envelope, cabal)
+            } else {
+              this.emit('old-non-command', envelope, cabal)
+            }
+          }
+        }
       })
+      this.emit('joined-cabal', cabal)
+    })
   }
 
   joinCabals (keys) {
