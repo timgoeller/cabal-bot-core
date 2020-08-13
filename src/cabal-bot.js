@@ -9,7 +9,7 @@ class CabalBot extends events.EventEmitter {
     }
     opts = opts || { }
     if (!opts.clientOpts) opts.clientOpts = { config: { temp: false }}
-    this.name = name
+    this.name = '~' + name + '[bot]'
     this.symbol = opts.symbol === undefined ? '!' : opts.symbol
     if (this.symbol.length !== 1) {
       throw new Error('symbol can\'t be longer than one character')
@@ -28,38 +28,44 @@ class CabalBot extends events.EventEmitter {
 
     this.client.addCabal(key).then(cabal => {
       console.log('initialized')
-      cabal.publishNick('~' + this.name + '[bot]', () => {})
-      this.channels.forEach(ch => cabal.joinChannel(ch))
+      cabal.publishNick(this.name, () => {})
+      if (this.channels) {
+        this.channels.forEach(ch => cabal.joinChannel(ch))
+      }
       cabal.on('new-message', (envelope) => {
-        if (envelope.author.key === cabal.user.key) return // don't process messages sent from this bot
-        if (this.channels) {
-          if (!this.channels.includes(envelope.channel)) return
-        }
-
-        if (envelope.message.value.timestamp > initTime) {
-          this.emit('new-message', envelope, cabal)
-
-          if (envelope.message.value.content.text !== '') {
-            if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-              this.emit('new-command', envelope, cabal)
-            } else {
-              this.emit('new-non-command', envelope, cabal)
-            }
-          }
-        } else {
-          this.emit('old-message', envelope, cabal)
-
-          if (envelope.message.value.content.text !== '') {
-            if (envelope.message.value.content.text.charAt(0) === this.symbol) {
-              this.emit('old-command', envelope, cabal)
-            } else {
-              this.emit('old-non-command', envelope, cabal)
-            }
-          }
-        }
+        this.processNewMessage(envelope, cabal, initTime)
       })
       this.emit('joined-cabal', cabal)
     })
+  }
+
+  processNewMessage (envelope, cabal, initTime) {
+    if (envelope.author.key === cabal.user.key) return // don't process messages sent from this bot
+    if (this.channels) {
+      if (!this.channels.includes(envelope.channel)) return
+    }
+
+    if (envelope.message.value.timestamp > initTime) {
+      this.emit('new-message', envelope, cabal)
+
+      if (envelope.message.value.content.text !== '') {
+        if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+          this.emit('new-command', envelope, cabal)
+        } else {
+          this.emit('new-non-command', envelope, cabal)
+        }
+      }
+    } else {
+      this.emit('old-message', envelope, cabal)
+
+      if (envelope.message.value.content.text !== '') {
+        if (envelope.message.value.content.text.charAt(0) === this.symbol) {
+          this.emit('old-command', envelope, cabal)
+        } else {
+          this.emit('old-non-command', envelope, cabal)
+        }
+      }
+    }
   }
 
   joinCabals (keys) {

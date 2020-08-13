@@ -12,11 +12,11 @@ var CabalBot = require('cabal-bot')
 
 const cb = new CabalBot('test-bot')
 
-cb.on('new-command', (envelope, cabalDetails) => {
+cb.on('new-command', (envelope, cabal) => {
   console.log('command entered!')
 })
 
-cb.on('new-message', (envelope, cabalDetails) => {
+cb.on('new-message', (envelope, cabal) => {
   cabal.publishMessage({
     type: 'chat/text',
     content: {
