@@ -1,6 +1,6 @@
 {
   "name": "cabal-bot-core",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "Create bots for cabal!",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "timgoeller",
   "license": "AGPL-3.0",
   "dependencies": {
-    "cabal-client": "^6.2.5"
+    "cabal-client": "^6.3.2"
   },
   "devDependencies": {
     "mocha": "^7.1.2",
